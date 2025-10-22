@@ -29,5 +29,43 @@ Practically speaking, the only thing to look out for is to use a 4GB SDCard as t
 It may be that larger cards may work, I haven't done any tests in this regard.
 To get going, open the prject in the Arduino IDE, select a Waveshare RP2350 Plus as the board, set the
 USB stack to 'Adafruit TinyUSB' and the clock rate to 200 MHz. This clock setting results in a
-simulator loop time of abou 1.5 uS ... just a little slower that the real thing.
-dig out your priceless PiDP8/I and 
+simulator loop time of abou 1.5 uS ... just a little slower that the real thing. You can check this with
+an oscciloscope on GPIO pin 19 which is on pins 15/16 of the extension connector on the PiDP11/I board.
+The Arduino setup can be a bit of a challenge with various libraries but I suspect the app will compile
+without any major changes .... see what error you get and have a look for the relevent linraries.
+then dig out your priceless PiDP8/I and plug in the board. Attach the USB port to your PC and you should see:
+
+SD Card size:7741440
+Attach SDCard as USB drive (y/N):
+
+Type 'y' and then wait for the SDCard to appear on your PC. Copy the OS images from the /data and /data-DF
+directories to the SDCard. The, press any key to restart the app.
+When you see the above again, just press return a few times an this should look like this:
+
+Attach SDCard as USB drive (y/N):n
+Enter papertape reader filename:
+File not found
+File PUNCH.TAPE attached.
+Run....
+Boot (1:DMS 2:OS/8):
+Run from: 0030
+.
+
+And, the frontpanel should light up! You should see a rock steady glow from the LEDS.
+try a DIR command and you will see tha flash away with varying brightness.
+There is no ILS code involved!!!!
+the Display cycles at about 1.5 ms (666 Hz) such that the brightness variation is due to
+the on/off ratio.
+Then you can try a few things in OS/8.
+eg:
+.R LOADER
+*CC,LIBC/I/O/G
+
+this will run a c programm and realy flashes all of the lights including the MQ.
+Or:
+R ABDLSR
+*L/G
+
+This will run Gordon Henderson's Larsen app which also flashes the lights .... quite a bit!
+
+
