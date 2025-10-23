@@ -119,7 +119,7 @@ void iot() {
 			}
 			break;
 
-		case 010:									// 601X:Punch
+		case 010:									// 601X:Reader
 			switch (inst & 07) {
 				case 01:
 					if (pti > -1)
@@ -138,7 +138,7 @@ void iot() {
 					break;
 			}
 			break;
-		case 020:							// 602x:Reader
+		case 020:							// 602x:Punch
 			switch (inst & 07) {
 				case 1:
 					if (pto >= TTWAIT)
@@ -150,12 +150,8 @@ void iot() {
 				case 6:
 				case 4:
 					pto = ACC & 0177;
-					dispen = 1;
-					while (dispen != 2)
-						;
 					if (f_write(&ptwrite,&pto,1,&bcnt) != FR_OK)
 						Serial.printf("Punch error...\r\n");
-					dispen = 0;
 					pto = 1;
 					break;
 			}
@@ -239,9 +235,6 @@ void iot() {
 					dskad = (ACC & 07777) + tm; /* dsk */
 					i = 010000 - mem[07750];
 					p = (uint8_t*)&mem[dskmem];
-					dispen = 1;
-					while (dispen != 2)
-						;
 					if (f_lseek(&df32, dskad * 2) != FR_OK)
 						Serial.printf("DF32 seek fail\r\n");
 					if (inst & 2) {
@@ -314,9 +307,6 @@ void iot() {
 							rkca |= (rkcmd & 070) << 9;
 							rkwc = (rkcmd & 0100) ? 128 : 256;
 							rkda |= (rkcmd & 1) ? 4096 : 0;
-							dispen = 1;
-							while (dispen != 2)
-								;
 							if (f_lseek(&rk05, rkda * 512) != FR_OK)
 								Serial.printf("RK05 seek fail\r\n");
 							p = (uint8_t*)&mem[rkca];
@@ -332,9 +322,6 @@ void iot() {
 							rkca |= (rkcmd & 070) << 9;
 							rkwc = (rkcmd & 0100) ? 128 : 256;
 							rkda |= (rkcmd & 1) ? 4096 : 0;
-							dispen = 1;
-							while (dispen != 2)
-								;
 							f_lseek(&rk05, rkda * 512);
 							p = (uint8_t*)&mem[rkca];
 							f_write(&rk05, p, rkwc * 2, &bcnt);

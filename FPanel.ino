@@ -110,12 +110,6 @@ void __not_in_flash_func(display)() {
       tdelay(500);
     }
 
-    if (dispen) {
-      gpio_put_all(LED_COLS | LED_ROWS);
-      dispen = 2;
-      while (dispen);
-    }
-
     memset(SWDATA, 0, sizeof(SWDATA));
     for (int i = 0; i < 12; i++) {
       gpio_set_dir_out_masked(LED_ROWS | LED_COLS | SW_ROWS);

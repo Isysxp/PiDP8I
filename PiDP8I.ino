@@ -326,11 +326,7 @@ bool cycl(void) {
 		if (ptrfile == FR_OK)
 			if (pti == -1 && !f_eof(&ptread)) {
 				pti = 0;
-				dispen = 1;
-				while (dispen != 2)
-					;
 				f_read(&ptread, &pti, 1, &bcnt);
-				dispen = 0;
 			}
 		kcnt = 0;
 		if (tti == 1 || tti == 5)  // Halt on keypress ^a or ^e
@@ -469,13 +465,9 @@ int xmain(int argc, char* args[]) {
 
 		Serial.printf("\r\nEnter papertape reader filename:");
 		readline(bfr, 80);
-		dispen = 1;
-		while (dispen != 2)
-			;
 		f_close(&ptwrite);
 		f_close(&ptread);
 		ptrfile = f_open(&ptread, bfr, FA_READ);
-		dispen = 0;
 		if (ptrfile == FR_OK)
 			Serial.printf("\r\nFile mounted in papertape reader.\r\n");
 		else
