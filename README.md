@@ -2,7 +2,7 @@
 There has been quite a bit of discussion in the PiDP8/I group in relation to a cycle accurate PDP8 simulator.
 https://groups.google.com/g/pidp-8/search?q=cycle%20accurate
 As we are all aware, there is a fundamental problem with SIMH as it is inherently an asynchronous process.
-This is compounded by the fact the Linux itself is not a mealtime environment either.
+This is compounded by the fact the Linux itself is not a realtime environment either.
 This project is based on an RP2350 board from Waveshare: https://www.waveshare.com/wiki/RP2350-PiZero
 This board has been designed to accept Raspberry Pi 'hats' so, why not try this with the ultimate hat
 namely the most excellent PiDP8/I developed by Oscar Vermeulen and supported by many other contributing
