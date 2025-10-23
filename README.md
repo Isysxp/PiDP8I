@@ -29,7 +29,7 @@ Practically speaking, the only thing to look out for is to use a 4GB SD Card as 
 It may be that larger cards may work, I haven't done any tests in this regard.
 To get going, open the project in the Arduino IDE, select a Waveshare RP2350 Plus as the board, set the
 USB stack to 'Ada fruit Tiny USB' and the clock rate to 200 MHz. This clock setting results in a
-simulator loop time of about 1.5 uS ... just a little slower that the real thing. You can check this with
+simulator loop time of about 1.6 uS ... just a little slower that the real thing. You can check this with
 an oscilloscope on GPIO pin 19 which is on pins 15/16 of the extension connector on the PiDP11/I board.
 The Arduino setup can be a bit of a challenge with various libraries but I suspect the app will compile
 without any major changes .... see what error you get and have a look for the relevant libraries.
