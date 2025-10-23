@@ -33,7 +33,7 @@ simulator loop time of about 1.5 uS ... just a little slower that the real thing
 an oscilloscope on GPIO pin 19 which is on pins 15/16 of the extension connector on the PiDP11/I board.
 The Arduino setup can be a bit of a challenge with various libraries but I suspect the app will compile
 without any major changes .... see what error you get and have a look for the relevant libraries.
-then dig out your priceless PiDP8/I and plug in the board. Attach the USB port to your PC and you should see:
+then dig out your priceless PiDP8/I and plug in the board. Attach the USB port to your PC using a USB terminal app (eg Terterm) and you should see:
 
 SD Card size:7741440<br>
 Attach SD Card as USB drive (y/N):<br>
@@ -62,8 +62,8 @@ eg:
 *CC, LIBC/I/O/G
 
 this will run a c program and really flashes all the lights including the MQ.
-Or:
-R ABDLSR
+Or:<br><br>
+.R ABDLSR
 *L/G
 
 This will run Gordon Henderson's Larsen app which also flashes the lights .... quite a bit!
