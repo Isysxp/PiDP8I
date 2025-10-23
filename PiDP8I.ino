@@ -241,7 +241,14 @@ void group1() {
 	ACC &= 017777;
 }
 
+//
+//	This is the primary simulator loop
+//
+
 bool cycl(void) {
+//
+// Interrupt handler
+//
 	if (intf && ibus) {
 		mem[0] = PC & 07777;
 		PC = 1;
@@ -252,11 +259,14 @@ bool cycl(void) {
 		dfr = ifr = dfl = ifl = uflag = 0;
 		RUN &= ~ION;
 	}
+//
 	digitalWriteFast(19, !digitalReadFast(19));       // Toggel GPIO19 for cycle time check
 	ibus = ttf || (tto == TTWAIT) || clkfl || dskfl;  // Set INTBUS from device flags
 	ibus |= (doutf == TTWAIT);
-	//
-	MB = inst = mem[PC + ifl];  // Enter FETCH cycle
+//
+// FETCH
+//
+	MB = inst = mem[PC + ifl];					// Fetch instruction
 	instr = MB >> 9;
 	if (instr < IOT_INSTR)
 		MA = ((inst & 0177) | ((inst & 0200) ? (PC & 07600) : 0)) + ifl;
@@ -271,7 +281,9 @@ bool cycl(void) {
 	snapshot(1);
 	if (keywait(0))
 		return true;
-	//
+//
+//	DEFER
+//
 	if (inst & 0400 && instr < IOT_INSTR) {  // Enter DEFER cycle if required
 		MSTATE = insttbl[instr] | DEFER;
 		if ((MA & 07770) == 010)
@@ -284,17 +296,24 @@ bool cycl(void) {
 		snapshot(1);
 		keywait(1);
 	}
-	//
-	if (instr < MRI_INSTR) {           // Instruction is MRI	// Enetr EXECUTE cycle for all MRIs except JMP
+//
+//	EXEC
+//
+	if (instr < MRI_INSTR) {           // Instruction is MRI	// Enter EXECUTE cycle for all MRIs except JMP
 		MSTATE = insttbl[instr] | EXEC;  // EXEC state
 	}
+//
 	if (dbg) {
 		sprintf(bfr, "PC:%04o Inst:%04o MA:%04o Mem:%04o Acc:%05o\r\n", PC, inst, MA, mem[MA], ACC);
 		Serial.print(bfr);
 		Serial.flush();
 		delay(100);
 	}
+//
 	PC++;
+//
+//	This section is used to sample input devices and set flags
+//	
 	if (kcnt++ > 1000) {
 		if (Serial.available() && !ttf) {
 			Serial.readBytes((char*)&tti, 1);
@@ -321,6 +340,9 @@ bool cycl(void) {
 			ttf = 0;
 		}
 	}
+//
+// This section throttles the output devces
+//
 	if (tto && (tto < TTWAIT))
 		tto++;
 	if (doutf && (doutf < TTWAIT))
@@ -332,8 +354,11 @@ bool cycl(void) {
 			clkfl = 1;
 			clkcnt = 0;
 		}
+//
+//	Do instruction
+//
 	switch (inst & 07000) {
-		case 0:  //AND
+		case 0:  		//AND
 			ACC &= mem[MA] | 010000;
 			break;
 		case 01000:  //TAD
@@ -362,7 +387,6 @@ bool cycl(void) {
 			uflag |= 2;
 			break;
 		case 06000:  //IOT
-
 			iot();
 			break;
 		case 07000:  //OPR
@@ -384,28 +408,34 @@ bool cycl(void) {
 				group1();
 			break;
 	}
-	ACC &= 017777;
+//
+	ACC &= 017777;			// Make sure ACC is valid
+//
+// Interrupt delay
 	if (intinh == 1 && inst != 06001)
 		intf = 1;
+//
 	if (MSTATE & EXEC) {
-		snapshot(1);
+		snapshot(1);						// Exec snapshot
 		keywait(1);
 	}
-	RUN &= ~PAUSE;  // Mark end of PAUSE if cycle was IOT
+	RUN &= ~PAUSE;  // Clear PAUSE
 	return true;
 }
 
 int xmain(int argc, char* args[]) {
-
+//
+// Bootstraps
+//
 	char bfr[128];
-	short dms[] = {
+	short dms[] = {			// DF32 4K DMS Bootstrap
 		06603,
 		06622,
 		05201,
 		05604,
 		07600,
 	};
-	short os8[] = {
+	short os8[] = {			// DF32 OS/8 bootstrap
 		07600,
 		06603,
 		06622,
@@ -420,7 +450,7 @@ int xmain(int argc, char* args[]) {
 	mem[07751] = 07576;
 	memcpy(&mem[0200], dms, sizeof(dms));
 	//memcpy(&mem[07750], os8, sizeof(os8));
-	mem[030] = 06743;
+	mem[030] = 06743;						// RK05 OS/8 bootstrap
 	mem[031] = 05031;
 	//memcpy(&mem[0200], test, sizeof(test));
 	caf();

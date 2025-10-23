@@ -9,7 +9,7 @@ void iot() {
 		usint = 1;
 		return;
 	}
-	switch (inst & 0770) {
+	switch (inst & 0770) {			// 600X
 		case 0:
 			switch (inst & 0777) {
 				case 000:
@@ -62,7 +62,7 @@ void iot() {
 					break;
 			}
 			break;
-		case 0200:
+		case 0200:									// 62XX (IF/DF)
 		case 0210:
 		case 0220:
 		case 0230:
@@ -119,7 +119,7 @@ void iot() {
 			}
 			break;
 
-		case 010:
+		case 010:									// 601X:Punch
 			switch (inst & 07) {
 				case 01:
 					if (pti > -1)
@@ -138,7 +138,7 @@ void iot() {
 					break;
 			}
 			break;
-		case 020:
+		case 020:							// 602x:Reader
 			switch (inst & 07) {
 				case 1:
 					if (pto >= TTWAIT)
@@ -160,7 +160,7 @@ void iot() {
 					break;
 			}
 			break;
-		case 030:
+		case 030:							// 603X:TTY keyboard
 			switch (inst & 07) {
 				case 1:
 					if (ttf)
@@ -179,7 +179,7 @@ void iot() {
 					ttf = 0;
 			}
 			break;
-		case 040:
+		case 040:							// 604X:TTY printer
 			switch (inst & 07) {
 				case 1:
 					if (tto >= TTWAIT)
@@ -224,7 +224,7 @@ void iot() {
 					break;
 			}
 			break;
-		case 0600:
+		case 0600:										// 66XX:DF32 disk drive
 		case 0610:
 		case 0620:
 			switch (inst & 0777) {
@@ -282,7 +282,8 @@ void iot() {
 					break;
 			}
 			break;
-		case 0740:
+//
+		case 0740:								// 674X:RK05/RK8 disk drive
 			switch (inst & 7) {
 				case 0:
 					break;
@@ -365,7 +366,7 @@ void iot() {
 					printf("Not allowed...RK8E\n");
 					break;
 			}
-		case 0130:
+		case 0130:											// 613X:RTC
 			switch (inst & 0777) {
 				case 0131:
 					clken = 1;
