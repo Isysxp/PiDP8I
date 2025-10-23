@@ -93,6 +93,7 @@ Also, the app asks for an SDcard file to be attached to the paper tape reader.<b
 This file may then be read in by OS/8.<br>
 .R PIP<br>
 *TTY:<PTR:/A   (Read the file and type it on the terminal)<br>
+^ (Press ^p)<br>
 (File contents here)<br><br>
 Have fun!<br>
 Ian Schofield<br>
