@@ -8,8 +8,9 @@ This board has been designed to accept Raspberry Pi 'hats' so, why not try this 
 namely the most excellent PiDP8/I developed by Oscar Vermeulen and supported by many other contributing
 to the repo at https://tangentsoft.com/pidp8i/wiki?name=Home.<br>
 This is an Arduino app and may be built using the Arduino IDE or the VSCode plugin.<br>
-I also reccomend a look at Folke Will's page at https://github.com/fpw/SoCDP8/tree/master where he has
-used an SOC to achieve a similar result.<br>
+I also recomend a look at Folke Will's page at https://github.com/fpw/SoCDP8/tree/master where he has
+used an SOC to achieve a similar result. Sadly, it looks like the board he recomends is now obselete and this is
+another reason for developing this app.<br>
 Using the RP2350 which is an update of the well known RP2040 ... Pi Pico allows for 2 synchronous
 processes to provide a simulator loop and to run the front panel display.
 I would note that I have been tempted in the past to design and build a board like this but other
