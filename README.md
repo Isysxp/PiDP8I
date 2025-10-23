@@ -39,7 +39,7 @@ SD Card size:7741440<br>
 Attach SD Card as USB drive (y/N):<br>
 
 Type 'y' and then wait for the SD Card to appear on your PC. Copy the OS images from the /data and /data-DF
-directories to the SD Card. The, press any key to restart the app.
+directories to the SD Card. Then, press any key to restart the app.
 When you see the above again, just press return a few times and this should look like this:
 
 Attach SD Card as USB drive (y/N):n<br>
@@ -66,6 +66,37 @@ Or:<br><br>
 .R ABDLSR
 *L/G
 
-This will run Gordon Henderson's Larsen app which also flashes the lights .... quite a bit!
+This will run Gordon Henderson's Larsen app which also flashes the lights .... quite a bit!<br><br>
+You will alos note that the app creates a file called PUNCH.TAP on the SDCard and files may be
+punched from OS/8 and then accessed via your PC. If this file exists, data will be appended.<br>
+SD Card size:7741440<br>
+Attach SDCard as USB drive (y/N): (press return)<br>
+Enter papertape reader filename:<br>
+File not found<br>
+File PUNCH.TAPE attached.<br>
+Run....<br>
+Boot (1:DMS 2:OS/8):<br>
+Run from: 0030<br>
+<br>
+.PUNCH TEST.BA<br>
+<br>
+.<br>
+Enter papertape reader filename:(press return)<br>
+File not found<br>
+Enter new PC (octal) (0 for hard reset):(press return)<br>
+Startup:<br>
+SD Card size:7741440<br>
+Attach SDCard as USB drive (y/N):y <br>
+Press an key to restart.... (wait for SDCard to be mounted on your PC and look for PUNCH.TAPE)<br>
+<br>
+Also, the app asks for an SDcard file to be attached to the paper tape reader.<br>
+This file may then be read in by OS/8.<br>
+.R PIP<br>
+*TTY:<PTR:/A   (Read the file and type it on the terminal)<br>
+^ (Press ^p)<br>
+(File contents here)<br><br>
+Have fun!<br>
+Ian Schofield<br>
+October 2025<br><br>
 
 
