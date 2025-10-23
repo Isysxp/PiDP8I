@@ -1,4 +1,4 @@
-**A cycle accurate implementation for the PiDP8/I**
+**A cycle accurate implementation for the PiDP8/I**<br><br>
 There has been quite a bit of discussion in the PiDP8/I group in relation to a cycle accurate PDP8 simulator.
 https://groups.google.com/g/pidp-8/search?q=cycle%20accurate
 As we are all aware, there is a fundamental problem with SIMH as it is inherently an asynchronous process.
