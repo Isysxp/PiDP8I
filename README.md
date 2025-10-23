@@ -60,16 +60,16 @@ the Display cycles at about 1.5 ms (666 Hz) such that the brightness variation i
 the on/off ratio.
 Then you can try a few things in OS/8.
 eg:
-. R LOADER
-*CC, LIBC/I/O/G
+. R LOADER<br>
+*CC, LIBC/I/O/G<br>
 
 this will run a c program and really flashes all the lights including the MQ.
 Or:<br><br>
-.R ABDLSR
-*L/G
+.R ABDLSR<br>
+*L/G<br>
 
 This will run Gordon Henderson's Larsen app which also flashes the lights .... quite a bit!<br><br>
-You will alos note that the app creates a file called PUNCH.TAP on the SDCard and files may be
+You will alos note that the app creates a file called PUNCH.TAPE on the SDCard and files may be
 punched from OS/8 and then accessed via your PC. If this file exists, data will be appended.<br>
 SD Card size:7741440<br>
 Attach SDCard as USB drive (y/N): (press return)<br>
