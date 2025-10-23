@@ -39,7 +39,7 @@ SD Card size:7741440<br>
 Attach SD Card as USB drive (y/N):<br>
 
 Type 'y' and then wait for the SD Card to appear on your PC. Copy the OS images from the /data and /data-DF
-directories to the SD Card. The, press any key to restart the app.
+directories to the SD Card. Then, press any key to restart the app.
 When you see the above again, just press return a few times and this should look like this:
 
 Attach SD Card as USB drive (y/N):n<br>
