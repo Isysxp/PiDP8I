@@ -19,7 +19,6 @@ specific language governing permissions and limitations under the License.
 #include <stdlib.h>
 #include <string.h>
 
-#include "my_debug.h"
 //
 #include "f_util.h"
 #include "ff_stdio.h"
@@ -130,7 +129,6 @@ int ff_stat(const char *pcFileName, FF_Stat_t *pxStatBuffer) {
     //  const TCHAR* path,  /* [IN] Object name */
     //  FILINFO* fno        /* [OUT] FILINFO structure */
     //);
-    myASSERT(pxStatBuffer);
     FILINFO filinfo;
     FRESULT fr = f_stat(pcFileName, &filinfo);
     pxStatBuffer->st_size = filinfo.fsize;
@@ -305,7 +303,6 @@ long ff_ftell(FF_FILE *pxStream) {
     //  FIL* fp   /* [IN] File object */
     //);
     FSIZE_t pos = f_tell(pxStream);
-    myASSERT(pos < LONG_MAX);
     return pos;
 }
 int ff_fseek(FF_FILE *pxStream, int iOffset, int iWhence) {
@@ -325,7 +322,7 @@ int ff_fseek(FF_FILE *pxStream, int iOffset, int iWhence) {
             fr = f_lseek(pxStream, iOffset);
             break;
         default:
-            myASSERT(!"Bad iWhence");
+            break;
     }
     errno = fresult2errno(fr);
     if (FR_OK == fr)
@@ -395,8 +392,6 @@ FF_FILE *ff_truncate(const char *pcFileName, long lTruncateSize) {
         return NULL;
     }
     FRESULT fr = f_open(fp, pcFileName, FA_OPEN_APPEND | FA_WRITE);
-    if (FR_OK != fr)
-        printf("%s: f_open error: %s (%d)\n", __func__, FRESULT_str(fr), fr);
     errno = fresult2errno(fr);
     if (FR_OK != fr) return NULL;
     while (f_tell(fp) < (FSIZE_t)lTruncateSize) {
@@ -410,13 +405,8 @@ FF_FILE *ff_truncate(const char *pcFileName, long lTruncateSize) {
     }
     fr = f_lseek(fp, lTruncateSize);
     errno = fresult2errno(fr);
-    if (FR_OK != fr)
-        printf("%s: f_lseek error: %s (%d)\n", __func__, FRESULT_str(fr), fr);
     if (FR_OK != fr) return NULL;
     fr = f_truncate(fp);
-    if (FR_OK != fr)
-        printf("%s: f_truncate error: %s (%d)\n", __func__, FRESULT_str(fr),
-               fr);
     errno = fresult2errno(fr);
     if (FR_OK == fr)
         return fp;

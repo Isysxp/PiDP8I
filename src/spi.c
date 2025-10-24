@@ -18,7 +18,6 @@ specific language governing permissions and limitations under the License.
 #include "pico/mutex.h"
 #include "pico/sem.h"
 //
-#include "my_debug.h"
 #include "hw_config.h"
 //
 #include "spi.h"
@@ -66,7 +65,6 @@ void set_spi_dma_irq_channel(bool useChannel1, bool shared) {
 //     element.
 bool spi_transfer(spi_t *spi_p, const uint8_t *tx, uint8_t *rx, size_t length) {
     // myASSERT(512 == length || 1 == length);
-    myASSERT(tx || rx);
     // myASSERT(!(tx && rx));
 
     // tx write increment is already false
@@ -102,13 +100,11 @@ bool spi_transfer(spi_t *spi_p, const uint8_t *tx, uint8_t *rx, size_t length) {
 
     switch (spi_p->DMA_IRQ_num) {
         case DMA_IRQ_0:
-            myASSERT(!dma_channel_get_irq0_status(spi_p->rx_dma));
             break;
         case DMA_IRQ_1:
-            myASSERT(!dma_channel_get_irq1_status(spi_p->rx_dma));
             break;
         default:
-            myASSERT(false);
+            break;
     }
     sem_reset(&spi_p->sem, 0);
 
@@ -122,26 +118,19 @@ bool spi_transfer(spi_t *spi_p, const uint8_t *tx, uint8_t *rx, size_t length) {
         &spi_p->sem, timeOut);  // Wait for notification from ISR
     if (!rc) {
         // If the timeout is reached the function will return false
-        DBG_PRINTF("Notification wait timed out in %s\n", __FUNCTION__);
         return false;
     }
     // Shouldn't be necessary:
     dma_channel_wait_for_finish_blocking(spi_p->tx_dma);
     dma_channel_wait_for_finish_blocking(spi_p->rx_dma);
 
-    myASSERT(!sem_available(&spi_p->sem));
-    myASSERT(!dma_channel_is_busy(spi_p->tx_dma));
-    myASSERT(!dma_channel_is_busy(spi_p->rx_dma));
-
     return true;
 }
 
 void spi_lock(spi_t *spi_p) {
-    myASSERT(mutex_is_initialized(&spi_p->mutex));
     mutex_enter_blocking(&spi_p->mutex);
 }
 void spi_unlock(spi_t *spi_p) {
-    myASSERT(mutex_is_initialized(&spi_p->mutex));
     mutex_exit(&spi_p->mutex);
 }
 
@@ -236,7 +225,7 @@ bool my_spi_init(spi_t *spi_p) {
             dma_channel_set_irq1_enabled(spi_p->tx_dma, false);
         break;
         default:
-            myASSERT(false);
+            break;
         }
         if (irqShared) {
             irq_add_shared_handler(

@@ -19,7 +19,6 @@ specific language governing permissions and limitations under the License.
 //
 #include "hardware/gpio.h"
 //
-#include "my_debug.h"
 #include "sd_card.h"
 #include "sd_spi.h"
 #include "spi.h"
@@ -99,7 +98,6 @@ uint8_t sd_spi_write(sd_card_t *pSD, const uint8_t value) {
     myASSERT(1 == num);
 #else
     bool success = spi_transfer(pSD->spi, &value, &received, 1);
-    myASSERT(success);
 #endif
     return received;
 }

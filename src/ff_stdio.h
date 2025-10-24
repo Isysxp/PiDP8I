@@ -19,8 +19,6 @@ specific language governing permissions and limitations under the License.
 //
 #include "ff.h"
 //
-#include "my_debug.h"
-
 #define BaseType_t int
 #define FF_FILE FIL
 
