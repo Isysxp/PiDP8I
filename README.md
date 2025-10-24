@@ -6,7 +6,11 @@ This is compounded by the fact the Linux itself is not a realtime environment ei
 This project is based on an RP2350 board from Waveshare: https://www.waveshare.com/wiki/RP2350-PiZero
 This board has been designed to accept Raspberry Pi 'hats' so, why not try this with the ultimate hat
 namely the most excellent PiDP8/I developed by Oscar Vermeulen and supported by many other contributing
-to the repo at https://tangentsoft.com/pidp8i/wiki?name=Home.
+to the repo at https://tangentsoft.com/pidp8i/wiki?name=Home.<br>
+This is an Arduino app and may be built using the Arduino IDE or the VSCode plugin.<br>
+I also recomend a look at Folke Will's page at https://github.com/fpw/SoCDP8/tree/master where he has
+used an SOC to achieve a similar result. Sadly, it looks like the board he recomends is now obselete and this is
+another reason for developing this app.<br>
 Using the RP2350 which is an update of the well known RP2040 ... Pi Pico allows for 2 synchronous
 processes to provide a simulator loop and to run the front panel display.
 I would note that I have been tempted in the past to design and build a board like this but other
@@ -18,8 +22,6 @@ standard Arduino libraries do not work. So have has to include (a lot of) exampl
 from the Waveshare site. All of these files are in the /src directory.
 The second problem was that the Pi interface GPIO pins are different to a standard Raspberry Pi.
 This required a lot of bit twiddling to get everything lined up for the front panel display and the switches.
-Then it became apparent that the SPI interface to the SD Card was disrupted by the GPIO activity
-for the front panel such that a semaphore sharing system was required.
 The next interesting wrinkle was a requirement to present the SD Card contents as a USB drive so that
 files may be added or deleted without having to remove the SD Card from the board. However as the disk images
 for the PDP8 are on the SD Card, this required some functionality to ensure that the SD Card contents were
@@ -28,7 +30,7 @@ Despite this, the system as it stands seem reasonably stable.
 Practically speaking, the only thing to look out for is to use a 4GB SD Card as this has a 512 byte block size.
 It may be that larger cards may work, I haven't done any tests in this regard.
 To get going, open the project in the Arduino IDE, select a Waveshare RP2350 Plus as the board, set the
-USB stack to 'Ada fruit Tiny USB' and the clock rate to 200 MHz. This clock setting results in a
+USB stack to 'Adafruit Tiny USB' and the clock rate to 200 MHz. This clock setting results in a
 simulator loop time of about 1.6 uS ... just a little slower that the real thing. You can check this with
 an oscilloscope on GPIO pin 19 which is on pins 15/16 of the extension connector on the PiDP11/I board.
 The Arduino setup can be a bit of a challenge with various libraries but I suspect the app will compile
@@ -58,16 +60,16 @@ the Display cycles at about 1.5 ms (666 Hz) such that the brightness variation i
 the on/off ratio.
 Then you can try a few things in OS/8.
 eg:
-. R LOADER
-*CC, LIBC/I/O/G
+. R LOADER<br>
+*CC, LIBC/I/O/G<br>
 
 this will run a c program and really flashes all the lights including the MQ.
 Or:<br><br>
-.R ABDLSR
-*L/G
+.R ABDLSR<br>
+*L/G<br>
 
 This will run Gordon Henderson's Larsen app which also flashes the lights .... quite a bit!<br><br>
-You will alos note that the app creates a file called PUNCH.TAP on the SDCard and files may be
+You will alos note that the app creates a file called PUNCH.TAPE on the SDCard and files may be
 punched from OS/8 and then accessed via your PC. If this file exists, data will be appended.<br>
 SD Card size:7741440<br>
 Attach SDCard as USB drive (y/N): (press return)<br>
