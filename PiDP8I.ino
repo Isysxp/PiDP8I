@@ -213,10 +213,6 @@ void group1() {
 
 bool cycl(void) {
 	//
-	// Fpanel sync delay. Adjust initial value in PiDP8I.h if you wish.
-	//
-	tdelay(snapdelay);
-	//
 	// Interrupt handler
 	//
 	if (intf && ibus) {

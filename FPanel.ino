@@ -83,9 +83,9 @@ int __not_in_flash_func(keywait)(int state) {
 
 
 void __not_in_flash_func(display)() {
-
+  fpdelay = fpref = 0657;                           // This is the reference timing parameter to give a steady display 
   while (1) {
-    gpio_set_dir_out_masked(LED_ROWS | LED_COLS);
+    gpio_set_dir_out_masked(LED_ROWS | LED_COLS);   // This is an interesting exercise in logic to drive the Front Panel!
     for (int k = 0, ledrow = LED1; k < 8; k++) {
       tbit = 1;
       patrn = LED_COLS;
@@ -94,9 +94,9 @@ void __not_in_flash_func(display)() {
           patrn = patrn ^ (1 << shift[i]);
       gpio_put_all(patrn | ledrow);
       ledrow = ledrow << 1;
-      tdelay(500);
+      tdelay(fpref);
       gpio_put_all(LED_COLS);
-      tdelay(300);
+      tdelay(300);              // Set all LED cols high and XLED low ... all LEDS off
     }
 
     memset(SWDATA, 0, sizeof(SWDATA));
@@ -117,5 +117,6 @@ void __not_in_flash_func(display)() {
     SWctrl = SWDATA[2];
     SWdfif = SWDATA[1];
     SWsr = SWDATA[0];
+    fpref = fpdelay;  // Or use fpref=SWsr to addjust the value via the SR (start with 657(8) as above)
   }
 }

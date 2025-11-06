@@ -61,11 +61,11 @@ SdFs sd;
 #define LED_COLS 0xfff0
 #define LED1 1 << 20
 #define GPIO_OUT_OFFSET 0x10
-#define GPIO_OUT        (SIO_BASE + GPIO_OUT_OFFSET)
+#define GPIO_OUT (SIO_BASE + GPIO_OUT_OFFSET)
 
 int insttbl[] = { AND, TAD, ISZ, DCA, JMS, JMP, IOT, OPR };
 
-int SWctrl, SWlast = 1, single = 0, SWdfif, SWsr;
+volatile int SWctrl, SWlast = 1, single = 0, SWdfif, SWsr, fpdelay, fpref;
 int snapdelay = 0;
 int SWDATA[3];
 int snap[8], swdat[3];
@@ -96,26 +96,25 @@ int* cpu[] = { &PC, &MA, &MB, &ACC, &MQ, &MSTATE, &RUN, &EMA };
 // Copy disk's data to buffer (up to bufsize) and
 // return number of copied bytes (must be multiple of block size)
 int32_t msc_read_cb(uint32_t lba, void* buffer, uint32_t bufsize) {
-  return (sd.card()->readSectors(lba, (uint8_t*)buffer, bufsize / 512)) ? bufsize : -1;
+	return (sd.card()->readSectors(lba, (uint8_t*)buffer, bufsize / 512)) ? bufsize : -1;
 }
 
 // Callback invoked when received WRITE10 command.
 // Process data in buffer to disk's storage and
 // return number of written bytes (must be multiple of block size)
 int32_t msc_write_cb(uint32_t lba, uint8_t* buffer, uint32_t bufsize) {
-  return (sd.card()->writeSectors(lba, (uint8_t*)buffer, bufsize / 512)) ? bufsize : -1;
+	return (sd.card()->writeSectors(lba, (uint8_t*)buffer, bufsize / 512)) ? bufsize : -1;
 }
 
 
 // Callback invoked when WRITE10 command is completed (status received and ACCepted by host).
 // used to flush any pending cache.
 void msc_flush_cb(void) {
-  // Sync hardware cache
+	// Sync hardware cache
 }
 
-void software_reset()
-{
-    watchdog_reboot(0,0,100);
+void software_reset() {
+	watchdog_reboot(0, 0, 100);
 }
 
 int Serial_getchar() {
