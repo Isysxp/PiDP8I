@@ -1,7 +1,7 @@
 //
 // IO subsystem
 //
-#include "src/ff.h"
+#include <FS.h>
 
 void iot() {
 
@@ -150,8 +150,8 @@ void iot() {
 				case 6:
 				case 4:
 					pto = ACC & 0177;
-					if (f_write(&ptwrite,&pto,1,&bcnt) != FR_OK)
-						Serial.printf("Punch error...\r\n");
+						if (!ptwrite.write((const char *) & pto, 1))
+							Serial.printf("Punch error...\r\n");
 					pto = 1;
 					break;
 			}
@@ -235,17 +235,18 @@ void iot() {
 					dskad = (ACC & 07777) + tm; /* dsk */
 					i = 010000 - mem[07750];
 					p = (uint8_t*)&mem[dskmem];
-					if (f_lseek(&df32, dskad * 2) != FR_OK)
+					if (!df32.seek(dskad * 2))
 						Serial.printf("DF32 seek fail\r\n");
 					if (inst & 2) {
 						/* read */
-						if (f_read(&df32, p, i * 2, &bcnt) != FR_OK)
+						if (!df32.read(p,i*2))
 							Serial.printf("DF32 read fail\r\n");
 					//	Serial.printf("Read:%o>%o:%o,%d Len:%d\r\n", dskad, dskmem, dskrg, i, bcnt);
 					} else {
 						/* write */
-						if (f_write(&df32, p, i * 2, &bcnt) != FR_OK)
+						if (!df32.write(p, i * 2))
 							Serial.printf("DF32 write fail\r\n");
+						df32.flush();
 					//	Serial.printf("Write:%o>%o:%o,%d Len:%d\r\n", dskad, dskmem, dskrg, i, bcnt);
 					}
 					dispen = 0;
@@ -307,10 +308,10 @@ void iot() {
 							rkca |= (rkcmd & 070) << 9;
 							rkwc = (rkcmd & 0100) ? 128 : 256;
 							rkda |= (rkcmd & 1) ? 4096 : 0;
-							if (f_lseek(&rk05, rkda * 512) != FR_OK)
+							if (!rk05.seek(rkda * 512))
 								Serial.printf("RK05 seek fail\r\n");
 							p = (uint8_t*)&mem[rkca];
-							if (f_read(&rk05, p, rkwc * 2, &bcnt) != FR_OK)
+							if (rk05.read(p, rkwc * 2) < 0)
 								Serial.printf("RK05 read fail\r\n");
 							//Serial.printf("Read Mem:%04o Dsk:%04o Len:%d\r\n", rkca, rkda, bcnt);
 							dispen = 0;
@@ -322,10 +323,12 @@ void iot() {
 							rkca |= (rkcmd & 070) << 9;
 							rkwc = (rkcmd & 0100) ? 128 : 256;
 							rkda |= (rkcmd & 1) ? 4096 : 0;
-							f_lseek(&rk05, rkda * 512);
+							if (!rk05.seek(rkda * 512))
+								Serial.printf("RK05 seek fail\r\n");
 							p = (uint8_t*)&mem[rkca];
-							f_write(&rk05, p, rkwc * 2, &bcnt);
-							f_sync(&rk05);
+							if (rk05.write(p, rkwc * 2) <= 0)
+								Serial.printf("RK05 write fail\r\n");
+							rk05.sync();
 							dispen = 0;
 							//Serial.printf("Write Mem:%04o Dsk:%04o Len:%d\r\n", rkca, rkda, bcnt);
 							rkca = (rkca + rkwc) & 07777;

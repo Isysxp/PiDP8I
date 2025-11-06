@@ -13,15 +13,6 @@ uint32_t ledrow, ledval, mdelay = 1000, swrow, rsl;
 uint32_t tbit, patrn, sw5;
 int shift[] = { 13, 9, 10, 11, 12, 8, 7, 6, 15, 14, 5, 4 };
 
-void __not_in_flash_func(snapshot)(int flag) {
-  if (CYCL++ < snapdelay && flag)
-    return;
-  RUN = (RUN & 07603) | (EAESC << 2);
-  for (int i = 0; i < 8; i++)
-    snap[i] = *cpu[i];
-  CYCL = 0;
-}
-
 void __not_in_flash_func(tdelay)(volatile int count) {
   int cntr = 0;
   while (cntr < count)
@@ -29,6 +20,9 @@ void __not_in_flash_func(tdelay)(volatile int count) {
 }
 
 int __not_in_flash_func(keywait)(int state) {
+
+  if (state && (SWctrl & SWSINST))
+    return 0;
 
   if (single) {
     //		Serial.printf("STOP:%d\r\n",single);
@@ -42,11 +36,7 @@ int __not_in_flash_func(keywait)(int state) {
     //		Serial.printf("Stop:%d ",SWctrl & (SWSINST | SWSSTEP));
   }
 
-  if (state && (SWctrl & SWSINST))
-    return 0;
-
   while (!(RUN & LRUN)) {
-    snapshot(0);
     tdelay(10000);
     if (SWctrl & SWCONT) {
       RUN |= LRUN;
@@ -67,7 +57,7 @@ int __not_in_flash_func(keywait)(int state) {
       MB = mem[PC + ifl];
       MA = PC;
       PC = (PC + 1) & 07777;
-      snapshot(0);
+      ;
       while (SWctrl & SWEXAM)
         yield();
     }
@@ -76,7 +66,6 @@ int __not_in_flash_func(keywait)(int state) {
       MB = mem[PC + ifl];
       MA = PC;
       PC = (PC + 1) & 07777;
-      snapshot(0);
       while (SWctrl & SWDEP)
         yield();
     }
@@ -101,13 +90,13 @@ void __not_in_flash_func(display)() {
       tbit = 1;
       patrn = LED_COLS;
       for (int i = 0; i < 12; i++, tbit = tbit << 1)
-        if ((snap[k] & tbit))
+        if ((*cpu[k] & tbit))
           patrn = patrn ^ (1 << shift[i]);
       gpio_put_all(patrn | ledrow);
       ledrow = ledrow << 1;
-      tdelay(4000);
-      gpio_put_all(LED_COLS);
       tdelay(500);
+      gpio_put_all(LED_COLS);
+      tdelay(300);
     }
 
     memset(SWDATA, 0, sizeof(SWDATA));
@@ -128,7 +117,5 @@ void __not_in_flash_func(display)() {
     SWctrl = SWDATA[2];
     SWdfif = SWDATA[1];
     SWsr = SWDATA[0];
-    snapdelay = 0300;                   // This is the display fiddle factor
-    //snapdelay = SWsr;                 // Uncomment this line and adjust the SR to what looks best for you!!!
   }
 }

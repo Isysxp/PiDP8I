@@ -1,20 +1,28 @@
 #pragma once
-#include "src/ff.h"
+#
+//#include "SdFat.h"
+//#include "SdFs.h"
+
+const int SD_MISO_PIN = 40;  // GPIO for MISO
+const int SD_MOSI_PIN = 31;  // GPIO for MOSI
+const int SD_SCK_PIN = 30;   // GPIO for SCK
+const int SD_CS_PIN = 43;    // GPIO for Chip Select (CS)
 int ctr = 0;
 char bfr[256];
 uint8_t* p;
 short rkdn, rkcmd, rkca, rkwc;
 int rkda;
-FIL rk05, df32;
+int bcnt;
+FsFile rk05, df32;
 char buffer[256];
 Adafruit_USBD_MSC usb_msc;
 Adafruit_USBD_CDC ttiox;
-FIL ptread, ptwrite;
-UINT bcnt;
+FsFile ptread, ptwrite;
 int ptrfile = 0, ptpfile = 0;
 volatile int dispen = 0, dispgo = 0;
-FRESULT fr;
-sd_card_t* pSD;                   // SD card filesystem pointer
+// **** Define SPI_DRIVER_SELECT 0 in SdFatConfig.h as well
+SdioConfig MySDIO(SD_SCK_PIN, SD_MOSI_PIN, SD_MISO_PIN, 2.0);
+SdFs sd;
 
 // Individual LED shift numbers NB these in reverse of the col order in the scheMAtic
 #define AND 1 << 11  // This is actually COL 1
@@ -58,7 +66,7 @@ sd_card_t* pSD;                   // SD card filesystem pointer
 int insttbl[] = { AND, TAD, ISZ, DCA, JMS, JMP, IOT, OPR };
 
 int SWctrl, SWlast = 1, single = 0, SWdfif, SWsr;
-int snapdelay = 0130;
+int snapdelay = 0;
 int SWDATA[3];
 int snap[8], swdat[3];
 int swCNT[] = { 12, 6, 8 };
@@ -88,18 +96,16 @@ int* cpu[] = { &PC, &MA, &MB, &ACC, &MQ, &MSTATE, &RUN, &EMA };
 // Copy disk's data to buffer (up to bufsize) and
 // return number of copied bytes (must be multiple of block size)
 int32_t msc_read_cb(uint32_t lba, void* buffer, uint32_t bufsize) {
-//	return flash.readBlocks(lba, (uint8_t*)buffer, bufsize / 512) ? bufsize : -1;
-	int32_t rsl = pSD->read_blocks(pSD, (uint8_t*)buffer, lba, bufsize / 512) ? -1 : bufsize;
-	return rsl;
+  return (sd.card()->readSectors(lba, (uint8_t*)buffer, bufsize / 512)) ? bufsize : -1;
 }
 
 // Callback invoked when received WRITE10 command.
 // Process data in buffer to disk's storage and
 // return number of written bytes (must be multiple of block size)
 int32_t msc_write_cb(uint32_t lba, uint8_t* buffer, uint32_t bufsize) {
-	int32_t rsl = pSD->write_blocks(pSD, (uint8_t*)buffer, lba, bufsize / 512) ? -1 : bufsize;
-	return rsl;
+  return (sd.card()->writeSectors(lba, (uint8_t*)buffer, bufsize / 512)) ? bufsize : -1;
 }
+
 
 // Callback invoked when WRITE10 command is completed (status received and ACCepted by host).
 // used to flush any pending cache.

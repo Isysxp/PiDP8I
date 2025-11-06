@@ -1,47 +1,13 @@
 
+#include <Arduino.h>
 #include <Adafruit_TinyUSB.h>
-#include "src/f_util.h"
-#include "src/ff.h"
-#include "pico/stdlib.h"
-#include "src/rtc.h"
-#include "src/sd_card.h"
-//
-#include "src/hw_config.h"
+#include <SPI.h>
+#include <SD.h>
+#include "SdFat.h"
+#include "SdFs.h"
 #include "PiDP8I.h"
 
-FRESULT scan_files(
-  char* path /* Start node to be scanned (***also used as work area***) */
-) {
-	FRESULT res;
-	DIR dir;
-	UINT i;
-	static FILINFO fno;
-
-	res = f_opendir(&dir, path); /* Open the directory */
-	if (res == FR_OK) {
-		for (;;) {
-			res = f_readdir(&dir, &fno);                  /* Read a directory item */
-			if (res != FR_OK || fno.fname[0] == 0) break; /* Break on error or end of dir */
-			if (fno.fattrib & AM_DIR) {
-				/* It is a directory */
-				i = strlen(path);
-				sprintf(&path[i], "/%s", fno.fname);
-				res = scan_files(path); /* Enter the directory */
-				if (res != FR_OK) break;
-				path[i] = 0;
-			} else {
-				/* It is a file. */
-				Serial.printf("%s/%-24s:\t%d\r\n", path, fno.fname, fno.fsize);
-			}
-		}
-		f_closedir(&dir);
-	}
-	return res;
-}
-
-
 int xmain(int argc, char* args[]);
-extern void snapshot(int flag);
 extern void display();
 extern void tdelay(int count);
 extern int keywait(int state);
@@ -84,19 +50,20 @@ char serial_getchar() {
 // the setup function runs once when you press reset or power the board
 void setup() {
 	// initialize
-	if (!TinyUSBDevice.isInitialized()) {
-		TinyUSBDevice.begin(0);
-	}
-	time_init();
-	pSD = sd_get_by_num(0);
-	fr = f_mount(&pSD->fatfs, pSD->pcName, 1);
-	if (FR_OK != fr) panic("f_mount error: %s (%d)\n", FRESULT_str(fr), fr);
-	uint64_t scnt = sd_sectors(pSD);
 	Serial.begin(115200);
+	ttiox.begin(115200);
 	while (!Serial)
 		yield();
-	delay(100);
-	Serial.printf("Startup:\r\nSD Card size:%ld\r\n", scnt);
+
+	Serial.println("Initializing SD card...");
+	delay(500);
+	if (!sd.begin(MySDIO)) {
+		Serial.println("SD card initialization failed!");
+		return;
+	}
+	Serial.println("SD Card initialized successfully!");
+	//sd.ls(LS_SIZE);   SD Card file listing
+	Serial.printf("Startup:\r\nSD Card size (kByte):%lld\r\n", sd.card()->sectorCount() / 2);
 	Serial.printf("Attach SDCard as USB drive (y/N):");
 	Serial.flush();
 	if (Serial_getchar() == 'y') {
@@ -105,7 +72,7 @@ void setup() {
 		delay(100);
 		usb_msc.setID("PiDP8I", "Mass Storage", "1.0");
 		// Set disk size
-		usb_msc.setCapacity(scnt, 512);
+		usb_msc.setCapacity(sd.card()->sectorCount(), 512);
 		// Set callbacks
 		usb_msc.setReadWriteCallback(msc_read_cb, msc_write_cb, msc_flush_cb);
 		//
@@ -115,7 +82,7 @@ void setup() {
 		delay(100);
 		USBDevice.attach();          // Will (re)attach MSC/USB drive and Serial
 		Serial_getchar();            // Wait here
-		f_unmount(pSD->pcName);      // Unmount file system
+		sd.end();                    // Unmount file system
 		watchdog_reboot(0, 0, 100);  // Hard reset to disconnect MSC/USB drive
 		while (1)
 			;
@@ -123,15 +90,16 @@ void setup() {
 	gpio_init_mask(LED_ROWS | LED_COLS | SW_ROWS);
 	dispen = 0;
 	delay(500);
+	strcpy(buffer, "/");
 	Serial.print("\r\nEnter papertape reader filename:");
 	readline(bfr, 80);
-	ptrfile = f_open(&ptread, bfr, FA_READ);
-	if (ptrfile == FR_OK)
+	ptread = sd.open(bfr, O_RDONLY);
+	if (ptread)
 		Serial.printf("\r\nFile mounted in papertape reader.\r\n");
 	else
 		Serial.printf("\r\nFile not found\r\n");
-	ptpfile = f_open(&ptwrite,"PUNCH.TAPE", FA_WRITE | FA_OPEN_APPEND);
-	if (ptpfile == FR_OK)
+	ptwrite = sd.open("PUNCH.TAPE", O_WRITE);
+	if (ptwrite)
 		Serial.printf("File PUNCH.TAPE attached.\r\n");
 	else
 		Serial.printf("Failed to create PUNCH.TAPE\r\n");
@@ -139,15 +107,13 @@ void setup() {
 	PC = 030;
 	if (Serial_getchar() == '1')
 		PC = 0200;
-	fr = f_open(&rk05, "rk05.dsk", FA_READ | FA_WRITE);
-	if (FR_OK != fr && FR_EXIST != fr)
-		panic("f_open(%s) error: %s (%d)\n", "RK05.DSK", FRESULT_str(fr), fr);
-	fr = f_open(&df32, "DF32.DSK", FA_READ | FA_WRITE);
-	if (FR_OK != fr && FR_EXIST != fr)
-		panic("f_open(%s) error: %s (%d)\n", "DF32.DSK", FRESULT_str(fr), fr);
+	rk05 = sd.open("rk05.dsk", O_RDWR | O_BINARY);
+	if (!rk05)
+		Serial.println("Cannot open RK05.dsk");
+	df32 = sd.open("DF32.DSK", O_RDWR | O_BINARY);
+	if (!df32)
+		Serial.println("Cannot open DF32.DSK");
 	ttiox.write("OK\r\n");
-	strcpy(buffer, "/");
-	//scan_files(buffer);
 	Serial.flush();
 	memset(SWDATA, 0, sizeof(SWDATA));
 	caf();
@@ -246,9 +212,13 @@ void group1() {
 //
 
 bool cycl(void) {
-//
-// Interrupt handler
-//
+	//
+	// Fpanel sync delay. Adjust initial value in PiDP8I.h if you wish.
+	//
+	tdelay(snapdelay);
+	//
+	// Interrupt handler
+	//
 	if (intf && ibus) {
 		mem[0] = PC & 07777;
 		PC = 1;
@@ -259,31 +229,31 @@ bool cycl(void) {
 		dfr = ifr = dfl = ifl = uflag = 0;
 		RUN &= ~ION;
 	}
-//
+	//
 	digitalWriteFast(19, !digitalReadFast(19));       // Toggel GPIO19 for cycle time check
 	ibus = ttf || (tto == TTWAIT) || clkfl || dskfl;  // Set INTBUS from device flags
 	ibus |= (doutf == TTWAIT);
-//
-// FETCH
-//
-	MB = inst = mem[PC + ifl];					// Fetch instruction
+	//
+	// FETCH
+	//
+	MB = inst = mem[PC + ifl];  // Fetch instruction
 	instr = MB >> 9;
 	if (instr < IOT_INSTR)
 		MA = ((inst & 0177) | ((inst & 0200) ? (PC & 07600) : 0)) + ifl;
 	else
 		MA = PC;
+	PC++;
 	MSTATE = FETCH;
 	EMA = (ACC & 010000) ? LINK : 0;
 	EMA |= (dfl >> 3) | (ifl >> 6);
 	MSTATE |= insttbl[instr];  // Display instruction
 	if (instr == IOT_INSTR)    // Instruction is IOT set PAUSE
 		RUN |= PAUSE;
-	snapshot(1);
 	if (keywait(0))
 		return true;
-//
-//	DEFER
-//
+	//
+	//	DEFER
+	//
 	if (inst & 0400 && instr < IOT_INSTR) {  // Enter DEFER cycle if required
 		MSTATE = insttbl[instr] | DEFER;
 		if ((MA & 07770) == 010)
@@ -293,27 +263,24 @@ bool cycl(void) {
 			MA = mem[MA] + ifl;
 		else
 			MA = mem[MA] + dfl;
-		snapshot(1);
 		keywait(1);
 	}
-//
-//	EXEC
-//
+	//
+	//	EXEC
+	//
 	if (instr < MRI_INSTR) {           // Instruction is MRI	// Enter EXECUTE cycle for all MRIs except JMP
 		MSTATE = insttbl[instr] | EXEC;  // EXEC state
 	}
-//
+	//
 	if (dbg) {
 		sprintf(bfr, "PC:%04o Inst:%04o MA:%04o Mem:%04o Acc:%05o\r\n", PC, inst, MA, mem[MA], ACC);
 		Serial.print(bfr);
 		Serial.flush();
 		delay(100);
 	}
-//
-	PC++;
-//
-//	This section is used to sample input devices and set flags
-//	
+	//
+	//	This section is used to sample input devices and set flags
+	//
 	if (kcnt++ > 1000) {
 		if (Serial.available() && !ttf) {
 			Serial.readBytes((char*)&tti, 1);
@@ -323,10 +290,10 @@ bool cycl(void) {
 			ttiox.readBytes((char*)&dti, 1);
 			dinf = 1;
 		}
-		if (ptrfile == FR_OK)
-			if (pti == -1 && !f_eof(&ptread)) {
+		if (ptread)
+			if (pti == -1 && ptread.available()) {
 				pti = 0;
-				f_read(&ptread, &pti, 1, &bcnt);
+				ptread.read((uint8_t*)&pti, 1);
 			}
 		kcnt = 0;
 		if (tti == 1 || tti == 5)  // Halt on keypress ^a or ^e
@@ -336,9 +303,9 @@ bool cycl(void) {
 			ttf = 0;
 		}
 	}
-//
-// This section throttles the output devces
-//
+	//
+	// This section throttles the output devces
+	//
 	if (tto && (tto < TTWAIT))
 		tto++;
 	if (doutf && (doutf < TTWAIT))
@@ -350,11 +317,11 @@ bool cycl(void) {
 			clkfl = 1;
 			clkcnt = 0;
 		}
-//
-//	Do instruction
-//
+	//
+	//	Do instruction
+	//
 	switch (inst & 07000) {
-		case 0:  		//AND
+		case 0:  //AND
 			ACC &= mem[MA] | 010000;
 			break;
 		case 01000:  //TAD
@@ -404,34 +371,35 @@ bool cycl(void) {
 				group1();
 			break;
 	}
-//
-	ACC &= 017777;			// Make sure ACC is valid
-//
-// Interrupt delay
+	//
+	ACC &= 017777;  // Make sure ACC is valid
+	                //
+	                // Interrupt delay
 	if (intinh == 1 && inst != 06001)
 		intf = 1;
-//
-	if (MSTATE & EXEC) {
-		snapshot(1);						// Exec snapshot
+	//
+	if (MSTATE & EXEC)
 		keywait(1);
-	}
-	RUN &= ~PAUSE;  // Clear PAUSE
+	RUN &= ~PAUSE;                       // Clear PAUSE
+	RUN = (RUN & 07603) | (EAESC << 2);  // Add in EAE stepcounter data
 	return true;
 }
 
 int xmain(int argc, char* args[]) {
-//
-// Bootstraps
-//
+	//
+	// Bootstraps
+	//
 	char bfr[128];
-	short dms[] = {			// DF32 4K DMS Bootstrap
+	short dms[] = {
+		// DF32 4K DMS Bootstrap
 		06603,
 		06622,
 		05201,
 		05604,
 		07600,
 	};
-	short os8[] = {			// DF32 OS/8 bootstrap
+	short os8[] = {
+		// DF32 OS/8 bootstrap
 		07600,
 		06603,
 		06622,
@@ -446,7 +414,7 @@ int xmain(int argc, char* args[]) {
 	mem[07751] = 07576;
 	memcpy(&mem[0200], dms, sizeof(dms));
 	//memcpy(&mem[07750], os8, sizeof(os8));
-	mem[030] = 06743;						// RK05 OS/8 bootstrap
+	mem[030] = 06743;  // RK05 OS/8 bootstrap
 	mem[031] = 05031;
 	//memcpy(&mem[0200], test, sizeof(test));
 	caf();
@@ -461,26 +429,30 @@ int xmain(int argc, char* args[]) {
 		while (cycl()) {
 		}
 		RUN &= ~LRUN;
-		snapshot(0);
-
+//
+//	Close and re-open file in PTR:
+//
+		ptread.close();
 		Serial.printf("\r\nEnter papertape reader filename:");
 		readline(bfr, 80);
-		f_close(&ptwrite);
-		f_close(&ptread);
-		ptrfile = f_open(&ptread, bfr, FA_READ);
-		if (ptrfile == FR_OK)
+		ptread = sd.open(bfr, O_RDONLY);
+		if (ptread)
 			Serial.printf("\r\nFile mounted in papertape reader.\r\n");
 		else
 			Serial.printf("\r\nFile not found\r\n");
-		//
+//
 		Serial.print("Enter new PC (octal) (0 for hard reset):");
 		readline(bfr, 80);
+		kcnt = 0;
 		sscanf(bfr, "%o", &kcnt);  // Use kcnt as temp int
 		if (!kcnt) {
+			ptwrite.close();						 // Close PUNCH.TAPE
 			watchdog_reboot(0, 0, 100);  // Hard reset to disconnect MSC/USB drive
 			while (1)
 				;
 		}
+		// User has type a non zero start address. PUNCH.TAPE file remains open.
+		// NB This restart is the same as LOAD ADDRESS and START
 		while (Serial.read() != -1)
 			;
 		caf();
