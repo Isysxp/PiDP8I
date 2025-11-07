@@ -36,7 +36,10 @@ an oscilloscope on GPIO pin 19 which is on pins 15/16 of the extension connector
 The Arduino setup can be a bit of a challenge with various libraries but I suspect the app will compile
 without any major changes .... see what error you get and have a look for the relevant libraries.
 then dig out your priceless PiDP8/I and plug in the board. Attach the USB port to your PC using a USB terminal app (eg Terterm) and you should see:
+Initializing SD card...
 
+SD Card initialized successfully!<br>
+Startup:<br>
 SD Card size:7741440<br>
 Attach SD Card as USB drive (y/N):<br>
 
@@ -51,7 +54,7 @@ File PUNCH.TAPE attached.<br>
 Run....<br>
 Boot (1:DMS 2:OS/8):<br>
 Run from: 0030<br>
-.<br>
+. <OS/8 is now running)<br>
 
 And, the front panel should light up! You should see a rock steady glow from the LEDS.
 try a DIR command and you will see them flash away with varying brightness.
