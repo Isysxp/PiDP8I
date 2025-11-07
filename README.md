@@ -54,7 +54,7 @@ File PUNCH.TAPE attached.<br>
 Run....<br>
 Boot (1:DMS 2:OS/8):<br>
 Run from: 0030<br>
-. <OS/8 is now running)<br>
+. (OS/8 is now running)<br>
 
 And, the front panel should light up! You should see a rock steady glow from the LEDS.
 try a DIR command and you will see them flash away with varying brightness.
