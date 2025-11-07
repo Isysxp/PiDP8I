@@ -122,6 +122,7 @@ Startup:<br>
 SD Card size (kByte):3870720<br>
 Attach SDCard as USB drive (y/N):(type y)<br>
 The SDCard will now mount as a USB drive and you can add files or view PUNCH.TAPE.<br>
+For those who are curious about the code around line 105 in FPanel.ino, this is fix for the now notorious latch up bug in the RP2350.<br>
 <br>
 Ian Schofield<br>
 
