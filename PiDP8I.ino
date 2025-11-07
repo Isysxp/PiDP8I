@@ -98,7 +98,7 @@ void setup() {
 		Serial.printf("\r\nFile mounted in papertape reader.\r\n");
 	else
 		Serial.printf("\r\nFile not found\r\n");
-	ptwrite = sd.open("PUNCH.TAPE", O_WRITE);
+	ptwrite = sd.open("PUNCH.TAPE", O_WRITE | O_CREAT);
 	if (ptwrite)
 		Serial.printf("File PUNCH.TAPE attached.\r\n");
 	else
