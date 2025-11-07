@@ -109,7 +109,7 @@ This can be found at: https://github.com/greiman/SdFat-beta. Replace the SdFat d
 The Front Panel Display timing has been adjusted to give an update rate of about 2KHz.<br>
 Also, some minor changes to the keyswitch logic have been applied.<br>
 The display cycle time can adjusted to give the desired behviour of the LEDs ie stable v flicker by adjusting line 86 in FPanel.ino.<br>
-Or, this can be manualy adjusted using the SR. See line 120 in FPanel.ino.<br>
+Or, this can be manualy adjusted using the SR. See line 121 in FPanel.ino.<br>
 The basic fetch cycle time is now 1.6 us with a cpu overclock at 200 MHz.<br>
 The PUNCH.TAPE file remains open until a hard reset.<br>
 To do this, while a programme is running, press ^a.<br>
