@@ -109,10 +109,10 @@ This can be found at: https://github.com/greiman/SdFat-beta. Replace the SdFat d
 The Front Panel Display timing has been adjusted to give an update rate of about 2KHz.<br>
 Also, some minor changes to the keyswitch logic have been applied.<br>
 The display cycle time can adjusted to give the desired behviour of the LEDs ie stable v flicker by adjusting line 86 in FPanel.ino.<br>
-Or, this can be manualy adjusted using the SR. See line 120 in FPanel.ino.<br>
+Or, this can be manualy adjusted using the SR. See line 121 in FPanel.ino.<br>
 The basic fetch cycle time is now 1.6 us with a cpu overclock at 200 MHz.<br>
 The PUNCH.TAPE file remains open until a hard reset.<br>
-To do this, while a programme is running, press ^a.<br>
+To do this, while a programme is running, press ^a.<br><br>
 Enter papertape reader filename:(press return)<br>
 File not found<br>
 Enter new PC (octal) (0 for hard reset):{press return)<br>
@@ -120,8 +120,10 @@ Initializing SD card...<br>
 SD Card initialized successfully!<br>
 Startup:<br>
 SD Card size (kByte):3870720<br>
-Attach SDCard as USB drive (y/N):(type y)<br>
+Attach SDCard as USB drive (y/N):(type y)<br><br>
 The SDCard will now mount as a USB drive and you can add files or view PUNCH.TAPE.<br>
+**I strongly recommend 'ejecting' the drive before restarting the PiDP8/I as is good practice for USB drives**<br>
+For those who are curious about the code around line 105 in FPanel.ino, this is fix for the now notorious latch up bug in the RP2350.<br>
 <br>
 Ian Schofield<br>
 
