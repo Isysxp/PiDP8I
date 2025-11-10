@@ -19,7 +19,6 @@ Adafruit_USBD_MSC usb_msc;
 Adafruit_USBD_CDC ttiox;
 FsFile ptread, ptwrite;
 int ptrfile = 0, ptpfile = 0;
-volatile int dispen = 0, dispgo = 0;
 // **** Define SPI_DRIVER_SELECT 0 in SdFatConfig.h as well
 SdioConfig MySDIO(SD_SCK_PIN, SD_MOSI_PIN, SD_MISO_PIN, 2.0);
 SdFs sd;
@@ -65,7 +64,7 @@ SdFs sd;
 
 int insttbl[] = { AND, TAD, ISZ, DCA, JMS, JMP, IOT, OPR };
 
-volatile int SWctrl, SWlast = 1, single = 0, SWdfif, SWsr, fpdelay, fpref;
+volatile int SWctrl, SWlast = 1, single = 0, SWdfif, SWsr, Dispgo = 0;
 int snapdelay = 0;
 int SWDATA[3];
 int snap[8], swdat[3];
@@ -87,11 +86,13 @@ int ifl, dfl, ifr, dfr, svr, uflag, usint, intinh, eaemd, gtf;
 int kcnt = 0;
 int clken, clkfl, clkcnt, dsPCntr;
 unsigned int dskrg, dskmem, dskfl, tm, i, tmp, dbg;
+int cycf;
 unsigned int dskad;
 int dtr;
+volatile int SWflag = 0;
 // Shared state variables
-int ACC, PC, MA, MB, MQ, MSTATE, RUN, EMA, EAESC;
-int* cpu[] = { &PC, &MA, &MB, &ACC, &MQ, &MSTATE, &RUN, &EMA };
+volatile int ACC, PC, MA, MB, MQ, MSTATE, RUN, EMA, EAESC;
+volatile int* cpu[] = { &PC, &MA, &MB, &ACC, &MQ, &MSTATE, &RUN, &EMA };
 
 // Copy disk's data to buffer (up to bufsize) and
 // return number of copied bytes (must be multiple of block size)

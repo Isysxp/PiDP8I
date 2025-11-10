@@ -9,7 +9,6 @@
 
 int xmain(int argc, char* args[]);
 extern void display();
-extern void tdelay(int count);
 extern int keywait(int state);
 
 int readline(char* buffer, int len) {
@@ -88,7 +87,6 @@ void setup() {
 			;
 	}
 	gpio_init_mask(LED_ROWS | LED_COLS | SW_ROWS);
-	dispen = 0;
 	delay(500);
 	strcpy(buffer, "/");
 	Serial.print("\r\nEnter papertape reader filename:");
@@ -122,7 +120,7 @@ void setup() {
 	gpio_set_dir_out_masked64(LED_ROWS | LED_COLS);
 	gpio_set_dir_in_masked64(SW_ROWS);
 	gpio_put_all(LED_COLS | LED_ROWS);
-	dispgo = 1;
+	Dispgo = 1;
 }
 
 // the loop function runs over and over again forever
@@ -131,7 +129,7 @@ void loop() {
 }
 
 void setup1() {
-	while (!dispgo)
+	while (!Dispgo)
 		yield();
 	display();
 }
@@ -226,7 +224,7 @@ bool cycl(void) {
 		RUN &= ~ION;
 	}
 	//
-	digitalWriteFast(19, !digitalReadFast(19));       // Toggel GPIO19 for cycle time check
+	digitalWriteFast(19, (cycf = ~cycf));             // Toggel GPIO19 for cycle time check
 	ibus = ttf || (tto == TTWAIT) || clkfl || dskfl;  // Set INTBUS from device flags
 	ibus |= (doutf == TTWAIT);
 	//
@@ -238,14 +236,15 @@ bool cycl(void) {
 		MA = ((inst & 0177) | ((inst & 0200) ? (PC & 07600) : 0)) + ifl;
 	else
 		MA = PC;
-	PC++;
+	PC = (PC + 1) & 07777;
 	MSTATE = FETCH;
 	EMA = (ACC & 010000) ? LINK : 0;
 	EMA |= (dfl >> 3) | (ifl >> 6);
 	MSTATE |= insttbl[instr];  // Display instruction
+	RUN &= ~PAUSE;             // Clear PAUSE
 	if (instr == IOT_INSTR)    // Instruction is IOT set PAUSE
 		RUN |= PAUSE;
-	if (keywait(0))
+	if (keywait(0))						 // Check panel switched and take a FETCH snapshot
 		return true;
 	//
 	//	DEFER
@@ -256,16 +255,17 @@ bool cycl(void) {
 			mem[MA]++;
 		mem[MA] &= 07777;
 		if (inst & 04000)
-			MA = mem[MA] + ifl;
+			MB = MA = mem[MA] + ifl;
 		else
-			MA = mem[MA] + dfl;
-		keywait(1);
+			MB = MA = mem[MA] + dfl;
+		keywait(1);															// Take a DEFER snapshot
 	}
 	//
 	//	EXEC
 	//
 	if (instr < MRI_INSTR) {           // Instruction is MRI	// Enter EXECUTE cycle for all MRIs except JMP
 		MSTATE = insttbl[instr] | EXEC;  // EXEC state
+		MB = mem[MA];
 	}
 	//
 	if (dbg) {
@@ -374,10 +374,8 @@ bool cycl(void) {
 	if (intinh == 1 && inst != 06001)
 		intf = 1;
 	//
-	if (MSTATE & EXEC)
-		keywait(1);
-	RUN &= ~PAUSE;                       // Clear PAUSE
 	RUN = (RUN & 07603) | (EAESC << 2);  // Add in EAE stepcounter data
+	keywait(2);													 // End of FETCH/EXECUTE snapshot
 	return true;
 }
 
@@ -425,9 +423,9 @@ int xmain(int argc, char* args[]) {
 		while (cycl()) {
 		}
 		RUN &= ~LRUN;
-//
-//	Close and re-open file in PTR:
-//
+		//
+		//	Close and re-open file in PTR:
+		//
 		ptread.close();
 		Serial.printf("\r\nEnter papertape reader filename:");
 		readline(bfr, 80);
@@ -436,13 +434,13 @@ int xmain(int argc, char* args[]) {
 			Serial.printf("\r\nFile mounted in papertape reader.\r\n");
 		else
 			Serial.printf("\r\nFile not found\r\n");
-//
+		//
 		Serial.print("Enter new PC (octal) (0 for hard reset):");
 		readline(bfr, 80);
 		kcnt = 0;
 		sscanf(bfr, "%o", &kcnt);  // Use kcnt as temp int
 		if (!kcnt) {
-			ptwrite.close();						 // Close PUNCH.TAPE
+			ptwrite.close();             // Close PUNCH.TAPE
 			watchdog_reboot(0, 0, 100);  // Hard reset to disconnect MSC/USB drive
 			while (1)
 				;

@@ -249,7 +249,6 @@ void iot() {
 						df32.flush();
 					//	Serial.printf("Write:%o>%o:%o,%d Len:%d\r\n", dskad, dskmem, dskrg, i, bcnt);
 					}
-					dispen = 0;
 					dskfl = 1;
 					mem[07751] = 0;
 					mem[07750] = 0;
@@ -314,7 +313,6 @@ void iot() {
 							if (rk05.read(p, rkwc * 2) < 0)
 								Serial.printf("RK05 read fail\r\n");
 							//Serial.printf("Read Mem:%04o Dsk:%04o Len:%d\r\n", rkca, rkda, bcnt);
-							dispen = 0;
 							rkca = (rkca + rkwc) & 07777;
 							rkdn++;
 							break;
@@ -329,7 +327,6 @@ void iot() {
 							if (rk05.write(p, rkwc * 2) <= 0)
 								Serial.printf("RK05 write fail\r\n");
 							rk05.sync();
-							dispen = 0;
 							//Serial.printf("Write Mem:%04o Dsk:%04o Len:%d\r\n", rkca, rkda, bcnt);
 							rkca = (rkca + rkwc) & 07777;
 							rkdn++;
