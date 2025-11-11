@@ -125,7 +125,16 @@ The SDCard will now mount as a USB drive and you can add files or view PUNCH.TAP
 **I strongly recommend 'ejecting' the drive before restarting the PiDP8/I as is good practice for USB drives**<br>
 For those who are curious about the code around line 105 in FPanel.ino, this is fix for the now notorious latch up bug in the RP2350.<br>
 <br>
+Ian Schofield<br><br><br>
+**Update mid Novenber 2025**<br>
+For this update, the display panel timing logic has been changed to what I hope is a 'reasonable' facsimilie of the original PDP8/I.<br>
+The light pattern is now rock steady in all apps using the KSF/JMP .-1 keyboard wait and in OS/8 PFOCAL which is interrupt driven.<br>
+There is a copy of the EAE maindec on the disk under OS/8. Type R EAE1 and watch the blinkenlights!<br>
+The FETCH only cycle time remains at 1.7 us. with the Pico clock at 200MHz. However, for overclockers, a 240MHz clock seems OK and results in a cycle time of 1.5us ... same as per the manuals!<br>
+As I don't want my PiDP8I to burst into flames and avoid using liquid Helium cooling, I have left the default at 200MHz!<br><br>
 Ian Schofield<br>
+
+
 
 
 
