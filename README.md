@@ -126,13 +126,23 @@ The SDCard will now mount as a USB drive and you can add files or view PUNCH.TAP
 For those who are curious about the code around line 105 in FPanel.ino, this is fix for the now notorious latch up bug in the RP2350.<br>
 <br>
 Ian Schofield<br><br><br>
-**Update mid Novenber 2025**<br>
+**Update mid Novenber 2025**<br><br>
 For this update, the display panel timing logic has been changed to what I hope is a 'reasonable' facsimilie of the original PDP8/I.<br>
 The light pattern is now rock steady in all apps using the KSF/JMP .-1 keyboard wait and in OS/8 PFOCAL which is interrupt driven.<br>
 There is a copy of the EAE maindec on the disk under OS/8. Type R EAE1 and watch the blinkenlights!<br>
 The FETCH only cycle time remains at 1.7 us. with the Pico clock at 200MHz. However, for overclockers, a 240MHz clock seems OK and results in a cycle time of 1.5us ... same as per the manuals!<br>
 As I don't want my PiDP8I to burst into flames and avoid using liquid Helium cooling, I have left the default at 200MHz!<br><br>
-Ian Schofield<br>
+Ian Schofield<br><br>
+**Update mid Novenber 2025**<br><br>
+This update is to extend the IOT cycle and cause the LEDS to be slightly brighter. An IOT cycle is longer than a FETCH cycle<br>
+as the CPU adds 3 further states (IOP 1,2,3). For a typical keyboard wait sequence of KSF, JMP .-1, the MB LEDS are slightly<br>
+brighter during the 6031 instruction in comparison the the 5xxx instruction.<br>
+You may try different timing numbers at line 148 in FPanel.ino. Reaplace this line with: fpdelay = SWsr and try various settings with the SR switches.<br>
+Once you have found a satisfactory SR setting, replace SWsr as above with your new value<br>
+For example if you run PFOCAL and set the SR to 250, the LEDS will flicker quite a bit!<br>
+The default (my) value for this parameter is 257 (octal)<br><br>
+Ian Schofield<br><br>
+
 
 
 
