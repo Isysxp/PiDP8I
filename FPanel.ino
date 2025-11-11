@@ -25,7 +25,7 @@ void __not_in_flash_func(ldelay)(volatile int count) {
     cntr++;
 }
 
-void __not_in_flash_func(snapshot)(int sdelay) {        // Take a snapshot of the CPU state for display
+void __not_in_flash_func(snapshot)(int sdelay) {  // Take a snapshot of the CPU state for display
 
   if (snapdelay++ > sdelay) {
     snapdelay = 0;
@@ -36,9 +36,9 @@ void __not_in_flash_func(snapshot)(int sdelay) {        // Take a snapshot of th
 
 int __not_in_flash_func(keywait)(int state) {
 
-  snapshot(0271);
+  snapshot(fpdelay);
 
-  if (!SWflag)          // Combined flag of STOP/SINGINST/SINGSTEP
+  if (!SWflag)  // Combined flag of STOP/SINGINST/SINGSTEP
     return 0;
   else
     RUN &= ~LRUN;
@@ -54,7 +54,7 @@ int __not_in_flash_func(keywait)(int state) {
     single = 0;
   }
 
-  while (!(RUN & LRUN)) {               // Stay in this loop with CPU halted until exit
+  while (!(RUN & LRUN)) {  // Stay in this loop with CPU halted until exit
     ldelay(10000);
     snapshot(0);
     if (SWctrl & SWCONT) {
@@ -95,6 +95,9 @@ int __not_in_flash_func(keywait)(int state) {
       RUN |= LRUN;
       return 1;
     }
+    if (Serial.available()) 
+      if (Serial.read() == 1)         // ^a
+        watchdog_reboot(0, 0, 100);  // Hard reset
   }
   return 0;
 }
@@ -115,12 +118,12 @@ void __not_in_flash_func(display)() {
           patrn = patrn ^ (1 << shift[i]);
       gpio_put_all(patrn | ledrow);
       ledrow = ledrow << 1;
-      tdelay(0700);             // Display the register pattern from snap[k]
+      tdelay(0600);  // Display the register pattern from snap[k]
       gpio_put_all(LED_COLS);
-      tdelay(300);              // Set all LED cols high and XLED low ... all LEDS off .. prevent any background glow
+      tdelay(300);  // Set all LED cols high and XLED low ... all LEDS off .. prevent any background glow
     }
 
-    if (swcntr++ < 100)         // Scan switches every 100 display cycles ... 390 Hz
+    if (swcntr++ < 100)  // Scan switches every 100 display cycles ... 390 Hz
       continue;
     swcntr = 0;
     memset(SWDATA, 0, sizeof(SWDATA));
@@ -142,5 +145,6 @@ void __not_in_flash_func(display)() {
     SWdfif = SWDATA[1];
     SWsr = SWDATA[0];
     SWflag = SWctrl & (SWSTOP | SWSINST | SWSSTEP);
+    fpdelay = 0355;
   }
 }

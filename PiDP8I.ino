@@ -10,6 +10,7 @@
 int xmain(int argc, char* args[]);
 extern void display();
 extern int keywait(int state);
+extern void ldelay(int delay);
 
 int readline(char* buffer, int len) {
 	int pos = 0;
@@ -244,7 +245,7 @@ bool cycl(void) {
 	RUN &= ~PAUSE;             // Clear PAUSE
 	if (instr == IOT_INSTR)    // Instruction is IOT set PAUSE
 		RUN |= PAUSE;
-	if (keywait(0))						 // Check panel switched and take a FETCH snapshot
+	if (keywait(0))  // Check panel switched and take a FETCH snapshot
 		return true;
 	//
 	//	DEFER
@@ -258,7 +259,7 @@ bool cycl(void) {
 			MB = MA = mem[MA] + ifl;
 		else
 			MB = MA = mem[MA] + dfl;
-		keywait(1);															// Take a DEFER snapshot
+		keywait(1);  // Take a DEFER snapshot
 	}
 	//
 	//	EXEC
@@ -375,7 +376,10 @@ bool cycl(void) {
 		intf = 1;
 	//
 	RUN = (RUN & 07603) | (EAESC << 2);  // Add in EAE stepcounter data
-	keywait(2);													 // End of FETCH/EXECUTE snapshot
+	keywait(2);                          // End of FETCH/EXECUTE snapshot
+	if (RUN & PAUSE)										 // Slightly increase the brightness of all LEDS during an IOT cycle.
+		for (int i = 0; i < 4; i++)
+			keywait(2);
 	return true;
 }
 

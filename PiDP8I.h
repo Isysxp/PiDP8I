@@ -75,7 +75,7 @@ int EA, MD, CYCL, IRQ, memdata;
 // Nano8 declarations
 //
 
-#define TTWAIT 5000
+#define TTWAIT 3000
 
 #define MEMSIZE 4096 * 8
 
@@ -86,7 +86,7 @@ int ifl, dfl, ifr, dfr, svr, uflag, usint, intinh, eaemd, gtf;
 int kcnt = 0;
 int clken, clkfl, clkcnt, dsPCntr;
 unsigned int dskrg, dskmem, dskfl, tm, i, tmp, dbg;
-int cycf;
+int cycf, fpdelay;
 unsigned int dskad;
 int dtr;
 volatile int SWflag = 0;
